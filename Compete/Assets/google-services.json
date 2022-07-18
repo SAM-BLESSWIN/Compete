@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "934155155290",
+    "firebase_url": "https://compete-11d1a-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "compete-11d1a",
+    "storage_bucket": "compete-11d1a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934155155290:android:b12a230b3a15dd18f7a563",
+        "android_client_info": {
+          "package_name": "com.Sam.Compete"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934155155290-f6bkouti3iqpfrf631b71h5mo3lncfo1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChmx4h7L8Dk9aYVudyXTj9oU-zxiv8j5M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934155155290-f6bkouti3iqpfrf631b71h5mo3lncfo1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
