@@ -13,11 +13,6 @@ public class FirebaseDatabaseManager : MonoBehaviour
 
     private DatabaseReference dbReference;
 
-    private string playerDisplayName;
-    private string playerCharacterID;
-    private string remotePlayerDisplayName;
-    private string remotePlayerCharacterID;
-
     public PlayerData localPlayerData;
     public PlayerData remotePlayerData;
 
@@ -39,6 +34,7 @@ public class FirebaseDatabaseManager : MonoBehaviour
     private void Start()
     {
         FirebaseManager.instance.OnFirebaseDepedenciesResolved += FirebaseManager_OnFirebaseDependenciesResolved;
+        localPlayerData = new PlayerData();
     }
 
     private void FirebaseManager_OnFirebaseDependenciesResolved(object sender, EventArgs e)
@@ -74,25 +70,15 @@ public class FirebaseDatabaseManager : MonoBehaviour
         {
             DataSnapshot snapshot = dbTask.Result;
 
-            playerDisplayName = snapshot.Child("username").Value.ToString();
-            Debug.Log(playerDisplayName);
-
-            playerCharacterID = snapshot.Child("characterid").Value.ToString();
-            Debug.Log(playerCharacterID);
-
             localPlayerData = new PlayerData
             {
-                playerDisplayerName = playerDisplayName,
-                playerCharacterId = int.Parse(playerCharacterID)
+                playerDisplayerName = snapshot.Child("username").Value.ToString(),
+                playerCharacterId = int.Parse(snapshot.Child("characterid").Value.ToString()),
+                playerTotalWins = int.Parse(snapshot.Child("totalwins").Value.ToString())
             };
 
             GameManager.instance.LoadScene(1);
         }
-    }
-
-    internal IEnumerator LoadRemotePlayerData(string nickName, object v)
-    {
-        throw new NotImplementedException();
     }
 
     public void SetDisplayName(string displayName)
@@ -103,14 +89,18 @@ public class FirebaseDatabaseManager : MonoBehaviour
             return;
         }
 
-        playerDisplayName = displayName;
-        StartCoroutine(SaveData("username", playerDisplayName));
+        StartCoroutine(SaveData("username", displayName));
+        UpdateTotalWins(0);
     }
 
     public void SetSelectedCharacter(int characterid)
     {
-        playerCharacterID = characterid.ToString();
-        StartCoroutine(SaveData("characterid", playerCharacterID));
+        StartCoroutine(SaveData("characterid", characterid.ToString()));
+    }
+
+    public void UpdateTotalWins(int wins)
+    {
+        StartCoroutine(SaveData("totalwins", wins.ToString()));
     }
 
     private IEnumerator SaveData(string _key, string _value)
@@ -124,7 +114,19 @@ public class FirebaseDatabaseManager : MonoBehaviour
         var dbTask = dbReference.Child("users").Child(user.UserId).Child(_key).SetValueAsync(_value);
         yield return new WaitUntil(() => dbTask.IsCompleted);
 
-        if(_key == "username")
+        if (_key == "totalwins")
+        {
+            if (dbTask.IsFaulted || dbTask.IsCanceled)
+            {
+                Debug.Log("Updating totalwins faulted");
+            }
+            else
+            {
+                Debug.Log("Totalwins Data submission success");
+                localPlayerData.playerTotalWins = int.Parse(_value);
+            }
+        }
+        else if (_key == "username")
         {
             if (dbTask.IsFaulted)
             {
@@ -138,7 +140,8 @@ public class FirebaseDatabaseManager : MonoBehaviour
             else
             {
                 dbReference.Child("usernames").Child(_value).SetValueAsync(user.UserId);
-                Debug.Log("Data submission success");
+                Debug.Log("Displayname Data submission success");
+                localPlayerData.playerDisplayerName = _value;
                 LoginUIManager.instance.CharacterSelectionScreen();
             }
         }
@@ -155,14 +158,8 @@ public class FirebaseDatabaseManager : MonoBehaviour
             }
             else
             {
-                Debug.Log("Data submission success");
-
-                localPlayerData = new PlayerData
-                {
-                    playerDisplayerName = playerDisplayName,
-                    playerCharacterId = int.Parse(playerCharacterID)
-                };
-
+                Debug.Log("Characterid Data submission success");
+                localPlayerData.playerCharacterId = int.Parse(_value);
                 GameManager.instance.LoadScene(1);
             }
         }
@@ -197,13 +194,11 @@ public class FirebaseDatabaseManager : MonoBehaviour
         {
             DataSnapshot snapshot1 = dbTask1.Result;
 
-            remotePlayerDisplayName = snapshot1.Child("username").Value.ToString();
-            remotePlayerCharacterID = snapshot1.Child("characterid").Value.ToString();
-
             remotePlayerData = new PlayerData
             {
-                playerDisplayerName = remotePlayerDisplayName,
-                playerCharacterId = int.Parse(remotePlayerCharacterID)
+                playerDisplayerName = snapshot1.Child("username").Value.ToString(),
+                playerCharacterId = int.Parse(snapshot1.Child("characterid").Value.ToString()),
+                playerTotalWins = int.Parse(snapshot1.Child("totalwins").Value.ToString())
             };
 
             callback.Invoke();

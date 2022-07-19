@@ -8,18 +8,25 @@ using Photon.Realtime;
 
 public class RoomUI : MonoBehaviourPunCallbacks
 {
+    [Header("UI References")]
     [SerializeField] private GameObject menuUI;
     [SerializeField] private GameObject JoinRoomUI;
 
+    [Header("Data UI References")]
     [SerializeField] private Image firstPlayerAvatar;
     [SerializeField] private Image secondPlayerAvatar;
 
     [SerializeField] private TMP_Text firstPlayerName;
     [SerializeField] private TMP_Text secondPlayerName;
 
+    [SerializeField] private TMP_Text firstPlayerTotalWins;
+    [SerializeField] private TMP_Text secondPlayerTotalWins;
+
+    [Header("Button UI References")]
     [SerializeField] private GameObject joinBtn;
     [SerializeField] private GameObject startGameBtn;
 
+    [Header("Character Sprite Data")]
     [SerializeField] private Characters character;
 
 
@@ -53,6 +60,7 @@ public class RoomUI : MonoBehaviourPunCallbacks
         firstPlayerAvatar.sprite =
             character.characterSprites[FirebaseDatabaseManager.instance.localPlayerData.playerCharacterId];
         firstPlayerName.text = FirebaseDatabaseManager.instance.localPlayerData.playerDisplayerName;
+        firstPlayerTotalWins.text = "Total Wins : "+FirebaseDatabaseManager.instance.localPlayerData.playerTotalWins.ToString();
 
         joinBtn.GetComponent<Button>().interactable = false;
         joinBtn.GetComponentInChildren<TMP_Text>().text = "waiting...";
@@ -80,6 +88,7 @@ public class RoomUI : MonoBehaviourPunCallbacks
     {
         secondPlayerAvatar.sprite = null;
         secondPlayerName.text = "-";
+        secondPlayerTotalWins.text = "-";
 
         joinBtn.gameObject.SetActive(true);
         startGameBtn.gameObject.SetActive(false);
@@ -92,6 +101,7 @@ public class RoomUI : MonoBehaviourPunCallbacks
     {
         secondPlayerAvatar.sprite = character.characterSprites[FirebaseDatabaseManager.instance.remotePlayerData.playerCharacterId];
         secondPlayerName.text = FirebaseDatabaseManager.instance.remotePlayerData.playerDisplayerName;
+        secondPlayerTotalWins.text = "Total Wins : " + FirebaseDatabaseManager.instance.remotePlayerData.playerTotalWins.ToString();
 
         if (!PhotonNetwork.IsMasterClient) return;
 
