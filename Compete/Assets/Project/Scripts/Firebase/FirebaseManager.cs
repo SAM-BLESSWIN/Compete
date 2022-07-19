@@ -113,7 +113,6 @@ public class FirebaseManager : MonoBehaviour
         Debug.Log($"Firebase user logged in : {user.DisplayName} , {user.UserId}");
         
         FirebaseDatabaseManager.instance.LoadData();
-        GameManager.instance.LoadScene(1);
     }
 
     #endregion
@@ -152,9 +151,7 @@ public class FirebaseManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"Firebase user logged in : {user.DisplayName} , {user.UserId}");
-            
-            LoginUIManager.instance.DisplayNameScreen();
+            Debug.Log($"Firebase user logged in : {user.DisplayName} , {user.UserId}");      
             FirebaseDatabaseManager.instance.LoadData();
         }
     }

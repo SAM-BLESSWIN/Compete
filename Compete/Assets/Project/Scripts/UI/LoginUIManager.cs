@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class LoginUIManager : MonoBehaviour
 {
@@ -52,7 +53,13 @@ public class LoginUIManager : MonoBehaviour
     [Space(5f)]
     [Header("NewUser Character UI References")]
     [SerializeField]
+    private Button[] characterBtns;
+    [SerializeField]
+    private Characters characters;
+    [SerializeField]
     private TMP_Text characterSelectionOutput;
+
+    private int selectedCharacterID;
 
     private void Awake()
     {
@@ -129,6 +136,26 @@ public class LoginUIManager : MonoBehaviour
         FirebaseDatabaseManager.instance.SetDisplayName(displayName.text);
     }
 
+    private void clearSelection()
+    {
+        foreach (Button btn in characterBtns)
+        {
+            btn.GetComponent<Image>().color = Color.white;
+        }
+    }
+
+    public void CharacterSelected(int index)
+    {
+        clearSelection();
+        selectedCharacterID = index;
+        characterBtns[index].GetComponent<Image>().color = Color.yellow;
+    }
+
+    public void SetSelectedCharacter()
+    {
+        FirebaseDatabaseManager.instance.SetSelectedCharacter(selectedCharacterID);
+    }
+
     public void LoginOutput(string output)
     {
         loginOutputText.text = output;
@@ -142,5 +169,10 @@ public class LoginUIManager : MonoBehaviour
     public void DisplayNameOutput(string output)
     {
         displayNameOutput.text = output;
+    }
+
+    public void CharacterSelectionOutput(string output)
+    {
+        characterSelectionOutput.text = output;
     }
 }
