@@ -15,6 +15,10 @@ public class LoginUIManager : MonoBehaviour
     private GameObject loginUI;
     [SerializeField]
     private GameObject registerUI;
+    [SerializeField]
+    private GameObject displayNameUI;
+    [SerializeField]
+    private GameObject characterSelectionUI;
 
     [Space(5f)]
     [Header("Login UI References")]
@@ -38,6 +42,18 @@ public class LoginUIManager : MonoBehaviour
     [SerializeField]
     private TMP_Text registerOutputText;
 
+    [Space(5f)]
+    [Header("NewUser Display Name UI References")]
+    [SerializeField]
+    private TMP_InputField displayName;
+    [SerializeField]
+    private TMP_Text displayNameOutput;
+
+    [Space(5f)]
+    [Header("NewUser Character UI References")]
+    [SerializeField]
+    private TMP_Text characterSelectionOutput;
+
     private void Awake()
     {
         if(instance == null)
@@ -55,7 +71,17 @@ public class LoginUIManager : MonoBehaviour
         checkingForAccountUI.SetActive(false);
         loginUI.SetActive(false);
         registerUI.SetActive(false);
+        displayNameUI.SetActive(false);
+        characterSelectionUI.SetActive(false);
         ClearOutputs();
+    }
+
+    public void ClearOutputs()
+    {
+        loginOutputText.text = "";
+        registerOutputText.text = "";
+        displayNameOutput.text = "";
+        characterSelectionOutput.text = "";
     }
 
     public void LoginScreen()
@@ -70,10 +96,16 @@ public class LoginUIManager : MonoBehaviour
         registerUI.SetActive(true);
     }
 
-    public void ClearOutputs()
+    public void DisplayNameScreen()
     {
-        loginOutputText.text = "";
-        registerOutputText.text = "";
+        ClearUI();
+        displayNameUI.SetActive(true);
+    }
+
+    public void CharacterSelectionScreen()
+    {
+        ClearUI();
+        characterSelectionUI.SetActive(true);
     }
 
     public void Login()
@@ -92,6 +124,11 @@ public class LoginUIManager : MonoBehaviour
         StartCoroutine(FirebaseManager.instance.SignInUsingGoogle());
     }
 
+    public void SetDisplayName()
+    {
+        FirebaseDatabaseManager.instance.SetDisplayName(displayName.text);
+    }
+
     public void LoginOutput(string output)
     {
         loginOutputText.text = output;
@@ -100,5 +137,10 @@ public class LoginUIManager : MonoBehaviour
     public void RegistrationOutput(string output)
     {
         registerOutputText.text = output;
+    }
+
+    public void DisplayNameOutput(string output)
+    {
+        displayNameOutput.text = output;
     }
 }

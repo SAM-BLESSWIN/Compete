@@ -111,6 +111,8 @@ public class FirebaseManager : MonoBehaviour
     private void AutoLogin()
     {
         Debug.Log($"Firebase user logged in : {user.DisplayName} , {user.UserId}");
+        
+        FirebaseDatabaseManager.instance.LoadData();
         GameManager.instance.LoadScene(1);
     }
 
@@ -151,7 +153,9 @@ public class FirebaseManager : MonoBehaviour
         else
         {
             Debug.Log($"Firebase user logged in : {user.DisplayName} , {user.UserId}");
-            GameManager.instance.LoadScene(1);
+            
+            LoginUIManager.instance.DisplayNameScreen();
+            FirebaseDatabaseManager.instance.LoadData();
         }
     }
     #endregion
@@ -236,7 +240,8 @@ public class FirebaseManager : MonoBehaviour
         else
         {
             Debug.Log($"Firebase user created Successfully : {user.DisplayName} , {user.UserId}");
-            GameManager.instance.LoadScene(1);
+
+            LoginUIManager.instance.DisplayNameScreen();
         }
     }
     #endregion
@@ -283,7 +288,8 @@ public class FirebaseManager : MonoBehaviour
         {
             user = task.Result;
             Debug.Log($"Firebase user created Successfully : {user.DisplayName} , {user.UserId}");
-            GameManager.instance.LoadScene(1);
+
+            LoginUIManager.instance.DisplayNameScreen();
         }
     }
     #endregion
@@ -297,6 +303,7 @@ public class FirebaseManager : MonoBehaviour
             GoogleSignIn.DefaultInstance.SignOut();
         }
     }
+
 
     private void OnDestroy()
     {
