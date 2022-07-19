@@ -18,6 +18,8 @@ public class FirebaseManager : MonoBehaviour
     private string webClientId = "934155155290-f6bkouti3iqpfrf631b71h5mo3lncfo1.apps.googleusercontent.com";
     private GoogleSignInConfiguration configuration;
 
+    public event EventHandler OnFirebaseDepedenciesResolved;
+
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
@@ -66,6 +68,8 @@ public class FirebaseManager : MonoBehaviour
         Debug.Log("Setting up Firebase Auth");
 
         auth = FirebaseAuth.DefaultInstance;
+        OnFirebaseDepedenciesResolved?.Invoke(this,EventArgs.Empty);
+
         auth.StateChanged += AuthStateChanged;
         AuthStateChanged(this, null);
 

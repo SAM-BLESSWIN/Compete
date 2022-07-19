@@ -6,15 +6,21 @@ using Firebase.Auth;
 using Firebase.Database;
 using System;
 
+
 public class FirebaseDatabaseManager : MonoBehaviour
 {
     public static FirebaseDatabaseManager instance;
 
     private DatabaseReference dbReference;
 
-    public string PlayerDisplayName { get; private set; } 
-    public string PlayerCharacterID { get; private set; }
-    
+    private string playerDisplayName;
+    private string playerCharacterID;
+    private string remotePlayerDisplayName;
+    private string remotePlayerCharacterID;
+
+    public PlayerData localPlayerData;
+    public PlayerData remotePlayerData;
+
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
@@ -30,58 +36,63 @@ public class FirebaseDatabaseManager : MonoBehaviour
         }
     }
 
-    void Start()
+    private void Start()
     {
-        // Get the root reference location of the database.
+        FirebaseManager.instance.OnFirebaseDepedenciesResolved += FirebaseManager_OnFirebaseDependenciesResolved;
+    }
+
+    private void FirebaseManager_OnFirebaseDependenciesResolved(object sender, EventArgs e)
+    {
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
+        Debug.Log(dbReference);
     }
 
     public void LoadData()
     {
-        StartCoroutine(FetchData("username"));
-        StartCoroutine(FetchData("characterid"));
+        FirebaseUser user = FirebaseManager.instance.user;
+        if (user == null) return;
+
+        StartCoroutine(FetchData(user.UserId));
     }
 
     private IEnumerator FetchData(string _key)
     {
-        FirebaseUser user = FirebaseManager.instance.user;
-        if (user == null)
-        {
-            yield break;
-        }
-
-        var dbTask = dbReference.Child("users").Child(user.UserId).Child(_key).GetValueAsync();
+        var dbTask = dbReference.Child("users").Child(_key).GetValueAsync();
         yield return new WaitUntil(predicate: () => dbTask.IsCompleted);
 
-        if (dbTask.IsFaulted)
+        if (dbTask.IsFaulted || dbTask.IsCanceled)
         {
-            LoginUIManager.instance.DisplayNameOutput("Faulted");
-
-        }
-        else if (dbTask.IsCanceled)
-        {
-            LoginUIManager.instance.DisplayNameOutput("Cancelled");
+            Debug.Log("Data Fetching Faulted");
+            LoginUIManager.instance.LoginScreen();
         }
         else if (dbTask.Result.Value == null)
         {
             Debug.Log("no data");
+            LoginUIManager.instance.LoginScreen();
         }
         else
         {
             DataSnapshot snapshot = dbTask.Result;
-            if(_key == "username")
-            {
-                PlayerDisplayName = snapshot.Value.ToString();
-                Debug.Log(PlayerDisplayName);
-            }
-            else if(_key == "characterid")
-            {
-                PlayerCharacterID = snapshot.Value.ToString();
-                Debug.Log(PlayerCharacterID);
 
-                GameManager.instance.LoadScene(1);
-            }
+            playerDisplayName = snapshot.Child("username").Value.ToString();
+            Debug.Log(playerDisplayName);
+
+            playerCharacterID = snapshot.Child("characterid").Value.ToString();
+            Debug.Log(playerCharacterID);
+
+            localPlayerData = new PlayerData
+            {
+                playerDisplayerName = playerDisplayName,
+                playerCharacterId = int.Parse(playerCharacterID)
+            };
+
+            GameManager.instance.LoadScene(1);
         }
+    }
+
+    internal IEnumerator LoadRemotePlayerData(string nickName, object v)
+    {
+        throw new NotImplementedException();
     }
 
     public void SetDisplayName(string displayName)
@@ -92,14 +103,14 @@ public class FirebaseDatabaseManager : MonoBehaviour
             return;
         }
 
-        PlayerDisplayName = displayName;
-        StartCoroutine(SaveData("username", PlayerDisplayName));
+        playerDisplayName = displayName;
+        StartCoroutine(SaveData("username", playerDisplayName));
     }
 
     public void SetSelectedCharacter(int characterid)
     {
-        PlayerCharacterID = characterid.ToString();
-        StartCoroutine(SaveData("characterid", PlayerCharacterID));
+        playerCharacterID = characterid.ToString();
+        StartCoroutine(SaveData("characterid", playerCharacterID));
     }
 
     private IEnumerator SaveData(string _key, string _value)
@@ -145,8 +156,57 @@ public class FirebaseDatabaseManager : MonoBehaviour
             else
             {
                 Debug.Log("Data submission success");
+
+                localPlayerData = new PlayerData
+                {
+                    playerDisplayerName = playerDisplayName,
+                    playerCharacterId = int.Parse(playerCharacterID)
+                };
+
                 GameManager.instance.LoadScene(1);
             }
+        }
+    }
+
+    public IEnumerator LoadRemotePlayerData(string _key,Action callback)
+    {
+        var dbTask = dbReference.Child("usernames").Child(_key).GetValueAsync();
+        yield return new WaitUntil(predicate: () => dbTask.IsCompleted);
+
+        if(dbTask.Exception != null)
+        {
+            Debug.LogError(dbTask.Exception.Message);   
+            yield break;
+        }
+
+        DataSnapshot snapshot = dbTask.Result;
+        string userId = snapshot.Value.ToString();
+
+        var dbTask1 = dbReference.Child("users").Child(userId).GetValueAsync();
+        yield return new WaitUntil(predicate: () => dbTask1.IsCompleted);
+
+        if (dbTask1.IsFaulted || dbTask1.IsCanceled)
+        {
+            Debug.Log("Remote Player Data Fetching Faulted");
+        }
+        else if (dbTask1.Result.Value == null)
+        {
+            Debug.Log("no data for remote player");
+        }
+        else
+        {
+            DataSnapshot snapshot1 = dbTask1.Result;
+
+            remotePlayerDisplayName = snapshot1.Child("username").Value.ToString();
+            remotePlayerCharacterID = snapshot1.Child("characterid").Value.ToString();
+
+            remotePlayerData = new PlayerData
+            {
+                playerDisplayerName = remotePlayerDisplayName,
+                playerCharacterId = int.Parse(remotePlayerCharacterID)
+            };
+
+            callback.Invoke();
         }
     }
 }

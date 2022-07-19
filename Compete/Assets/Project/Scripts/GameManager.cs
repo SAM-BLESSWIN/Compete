@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,5 +28,10 @@ public class GameManager : MonoBehaviour
     public void LoadScene(int sceneIndex)
     {
         SceneManager.LoadSceneAsync(sceneIndex);
+    }
+
+    public void PhotonLoadScene(int sceneIndex)
+    {
+        PhotonNetwork.LoadLevel(sceneIndex);
     }
 }
