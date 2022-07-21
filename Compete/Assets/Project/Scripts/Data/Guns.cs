@@ -6,4 +6,6 @@ using UnityEngine;
 public class Guns : ScriptableObject
 {
     public string gunName;
+    public float damage;
+    public AudioClip fireSound;
 }

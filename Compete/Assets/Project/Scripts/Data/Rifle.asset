@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: Rifle
   m_EditorClassIdentifier: 
   gunName: Rifle
+  damage: 10
+  fireSound: {fileID: 8300000, guid: ee4bc5a1c0742d448be0cb3defa6059d, type: 3}

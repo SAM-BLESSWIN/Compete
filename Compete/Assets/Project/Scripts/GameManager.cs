@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadScene(int sceneIndex)
     {
-        SceneManager.LoadSceneAsync(sceneIndex);
+        SceneManager.LoadScene(sceneIndex);
     }
 
     public void PhotonLoadScene(int sceneIndex)

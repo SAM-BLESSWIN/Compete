@@ -122,7 +122,7 @@ public class FirebaseDatabaseManager : MonoBehaviour
             }
             else
             {
-                Debug.Log("Totalwins Data submission success");
+                Debug.Log("Totalwins Data submission success" + _value);
                 localPlayerData.playerTotalWins = int.Parse(_value);
             }
         }

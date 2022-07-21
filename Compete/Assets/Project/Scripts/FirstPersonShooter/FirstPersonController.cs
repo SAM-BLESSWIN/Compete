@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
 #endif
@@ -9,7 +10,7 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 	[RequireComponent(typeof(PlayerInput))]
 #endif
-	public class FirstPersonController : MonoBehaviour
+	public class FirstPersonController : MonoBehaviourPun
 	{
 		[Header("Player")]
 		[Tooltip("Move speed of the character in m/s")]
@@ -50,6 +51,11 @@ namespace StarterAssets
 		public float TopClamp = 90.0f;
 		[Tooltip("How far in degrees can you move the camera down")]
 		public float BottomClamp = -90.0f;
+
+
+		[Header("Audio")]
+		[SerializeField] private AudioSource audioSource;
+
 
 		// cinemachine
 		private float _cinemachineTargetPitch;
@@ -112,6 +118,8 @@ namespace StarterAssets
 
 		private void Update()
 		{
+			if (!photonView.IsMine) return;
+
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
@@ -192,6 +200,11 @@ namespace StarterAssets
 			{
 				// move
 				inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
+				FootStepAudio(true);
+			}
+			else
+            {
+				FootStepAudio(false);
 			}
 
 			// move the player
@@ -263,6 +276,17 @@ namespace StarterAssets
 
 			// when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
 			Gizmos.DrawSphere(new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z), GroundedRadius);
+		}
+
+		private void FootStepAudio(bool value)
+        {
+			photonView.RPC(nameof(RPC_FootStepAudio), RpcTarget.All,value);
+		}
+
+		[PunRPC]
+		private void RPC_FootStepAudio(bool value)
+		{
+			audioSource.enabled = value;
 		}
 	}
 }

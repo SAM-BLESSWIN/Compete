@@ -2,33 +2,63 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-using StarterAssets;
+using System;
 
-public class MultiplayerManager : MonoBehaviourPun
+public class MultiplayerManager : MonoBehaviourPunCallbacks
 {
-    [Header("Player Controls References")]
-    [SerializeField] private FirstPersonController firstPersonController;
-    [SerializeField] private GunControl gunControl;
+    [SerializeField] private GameObject playerPrefab;
+    private GameObject instantiatedPlayer;
 
-    [Header("Camera References")]
-    [SerializeField] private GameObject playerCameraRoot;
-    [SerializeField] private GameObject mainCamera;
-    [SerializeField] private GameObject followCamera;
+    private const int MAX_LIVES = 3;
+    private int currentLife;
 
-    [Header("Mobile UI Inputs")]
-    [SerializeField]private GameObject mobileInputs;
-
-    void Start()
+    private void Awake()
     {
-        if (!photonView.IsMine)
+        if(photonView.IsMine)
         {
-            Destroy(playerCameraRoot);
-            Destroy(mainCamera);
-            Destroy(followCamera);
-            Destroy(mobileInputs);
-
-            firstPersonController.enabled = false;
-            gunControl.enabled = false;
+            currentLife = MAX_LIVES;
+            CreatePlayer();
         }
     }
+
+    private void CreatePlayer()
+    {
+        Transform spawnPoint = SpawnManager.instance.GetSpawnPoint();
+
+        instantiatedPlayer = PhotonNetwork.Instantiate(playerPrefab.name,
+            spawnPoint.position, spawnPoint.rotation,0,
+            new object[] {photonView.ViewID,currentLife});
+    }
+
+    public void PlayerRespawn(int currentLife)
+    {
+        this.currentLife = currentLife;
+        PhotonNetwork.Destroy(instantiatedPlayer);
+        photonView.RPC(nameof(SpawnMessage), RpcTarget.All);
+        CreatePlayer();
+    }
+
+    public void PlayerDead()
+    {
+        PhotonNetwork.Destroy(instantiatedPlayer);
+        Invoke(nameof(WaitOnDestroy), 2);
+    }
+
+    private void WaitOnDestroy()
+    {
+        photonView.RPC(nameof(GameOver), RpcTarget.All, PhotonNetwork.NickName);
+    }
+
+    [PunRPC]
+    private void SpawnMessage()
+    {
+        GameWorldManager.instance.ActivateSpawnMessage();
+    }
+
+    [PunRPC]
+    private void GameOver(string deadPlayerName)
+    {
+        GameWorldManager.instance.GameOver(deadPlayerName);
+    }
+
 }

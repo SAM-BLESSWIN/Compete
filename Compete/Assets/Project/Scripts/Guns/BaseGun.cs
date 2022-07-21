@@ -4,7 +4,9 @@ using UnityEngine;
 
 public abstract class BaseGun : MonoBehaviour
 {
-    [SerializeField] private Guns gun;
+    [SerializeField] protected Guns gun;
+
+    public GameObject bulletImpactPrefab;
 
     public abstract void Activate();
 }
